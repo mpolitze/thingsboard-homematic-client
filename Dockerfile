@@ -1,9 +1,11 @@
 FROM python:3.7-alpine
 
+COPY  ["requirements.txt", "src", "/app/"]
+
 RUN apk add --update --no-cache --virtual .build-deps gcc musl-dev git && \
-    mkdir /app && \
-    git clone git@github.com:mpolitze/thingsboard-homematic-client.git /app && \
-    rm -r /app/.git && \
+#    mkdir /app && \
+#    git clone git@github.com:mpolitze/thingsboard-homematic-client.git /app && \
+#    rm -r /app/.git && \
     ls /app && \
     pip install -r /app/requirements.txt > /dev/null && \
     ln -s /config/config.ini /app/config.ini && \
