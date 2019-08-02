@@ -2,7 +2,9 @@ FROM python:3.7-alpine
 
 RUN apk add --update --no-cache --virtual .build-deps gcc musl-dev git && \
     mkdir /app && \
-    git clone https://gitlab+deploy-token-163:np4NqeyahGv2Nzo-LA3L@git.rwth-aachen.de/mpolitze/thingsboard-homematic-client.git /app && \
+    git clone git@github.com:mpolitze/thingsboard-homematic-client.git /app && \
+    rm -r /app/.git && \
+    ls /app && \
     pip install -r /app/requirements.txt > /dev/null && \
     ln -s /config/config.ini /app/config.ini && \
     apk del .build-deps && \
