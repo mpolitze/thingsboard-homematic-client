@@ -43,8 +43,12 @@ class ThingsboardDeviceCredentials:
 
 class TelemetryFiler:
     def __init__(self, r, a: list):
+        self._deviceType = r
         self.r = re.compile(r)
         self.a = a
+
+    def isFor(self, device: HmIPDevice):
+        return self._deviceType == device.modelType
 
     def collect(self, device: HmIPDevice, telemetry: dict = {}):
         if self.r.match(device.modelType):           
@@ -56,7 +60,8 @@ class TelemetryFiler:
 
 TELEMETRY_FILTERS = [
         TelemetryFiler('.*', ['rssiDeviceValue', 'rssiPeerValue', 'lowBat']),
-        TelemetryFiler('HmIP-BROLL', ['shutterLevel'])
+        TelemetryFiler('HmIP-BROLL', ['shutterLevel']),
+        TelemetryFiler('HmIP-SWO-PR', ['actualTemperature', 'humidity', 'illumination', 'raining', 'sunshine', 'storm', 'todayRainCounter','todaySunshineDuration','totalRainCounter','totalSunshineDuration','vaporAmount','windDirection','windDirectionVariation','windSpeed','yesterdayRainCounter','yesterdaySunshineDuration'])
 ]
 
 class ThingsboardDevice:
@@ -85,9 +90,11 @@ class ThingsboardDevice:
         return d
 
     def updateTelemetryFromHmIP(self, group: HmIPGroup, device: HmIPDevice):
-        d = HmIPDevice(None)
         a = {'group': group.label}
         t = {}
+
+        if True not in map(lambda f: f.isFor(device), TELEMETRY_FILTERS):
+            return
 
         for f in TELEMETRY_FILTERS:
             f.collect(device, t)

@@ -22,7 +22,6 @@ def main():
             for d in g.devices:                
                 x = tb.getOrCreateDevice(d)  
                 x.updateTelemetryFromHmIP(g, d)
-                break
                 
 
 if __name__ == "__main__":
