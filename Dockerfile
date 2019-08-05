@@ -7,7 +7,7 @@ RUN apk add --update --no-cache --virtual .build-deps gcc musl-dev git && \
     rm /app/requirements.txt && \
     ln -s /config/config.ini /app/config.ini && \
     apk del .build-deps && \
-    printf "*/10 * * * * python /app/main.py > /proc/1/fd/1 2> /proc/1/fd/2\n" >> /etc/crontabs/root
+    printf "*/10 * * * * cd /app/ && python /app/main.py > /proc/1/fd/1 2> /proc/1/fd/2\n" >> /etc/crontabs/root
 
 COPY config.sample.ini /config/config.ini
 

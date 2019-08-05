@@ -61,7 +61,11 @@ class TelemetryFiler:
 TELEMETRY_FILTERS = [
         TelemetryFiler('.*', ['rssiDeviceValue', 'rssiPeerValue', 'lowBat']),
         TelemetryFiler('HmIP-BROLL', ['shutterLevel']),
-        TelemetryFiler('HmIP-SWO-PR', ['actualTemperature', 'humidity', 'illumination', 'raining', 'sunshine', 'storm', 'todayRainCounter','todaySunshineDuration','totalRainCounter','totalSunshineDuration','vaporAmount','windDirection','windDirectionVariation','windSpeed','yesterdayRainCounter','yesterdaySunshineDuration'])
+        TelemetryFiler('HmIP-SWO-PR', ['actualTemperature', 'humidity', 'illumination', 'raining', 'sunshine', 'storm', 'todayRainCounter','todaySunshineDuration','totalRainCounter','totalSunshineDuration','vaporAmount','windDirection','windDirectionVariation','windSpeed','yesterdayRainCounter','yesterdaySunshineDuration']),
+        TelemetryFiler('HMIP-PSM', ['on', 'currentPowerConsumption', 'energyCounter']),
+        TelemetryFiler('HMIP-FSM', ['on', 'currentPowerConsumption', 'energyCounter']),
+        TelemetryFiler('HmIP-SWDO-I', ['windowState', 'sabotage']),
+        TelemetryFiler('HmIP-SLO', ['averageIllumination', 'currentIllumination','highestIllumination','lowestIllumination']),
 ]
 
 class ThingsboardDevice:
