@@ -1,6 +1,7 @@
 import requests
 import json
 import re
+import datetime
 from homematicip.device import Device as HmIPDevice
 from homematicip.group import Group as HmIPGroup
 
@@ -44,11 +45,11 @@ class ThingsboardDeviceCredentials:
 class TelemetryFiler:
     def __init__(self, r, a: list):
         self._deviceType = r
-        self.r = re.compile(r)
+        self.r = re.compile(r, re.IGNORECASE)
         self.a = a
 
     def isFor(self, device: HmIPDevice):
-        return self._deviceType == device.modelType
+        return self._deviceType.lower() == device.modelType.lower()
 
     def collect(self, device: HmIPDevice, telemetry: dict = {}):
         if self.r.match(device.modelType):           
@@ -62,8 +63,9 @@ TELEMETRY_FILTERS = [
         TelemetryFiler('.*', ['rssiDeviceValue', 'rssiPeerValue', 'lowBat']),
         TelemetryFiler('HmIP-BROLL', ['shutterLevel']),
         TelemetryFiler('HmIP-SWO-PR', ['actualTemperature', 'humidity', 'illumination', 'raining', 'sunshine', 'storm', 'todayRainCounter','todaySunshineDuration','totalRainCounter','totalSunshineDuration','vaporAmount','windDirection','windDirectionVariation','windSpeed','yesterdayRainCounter','yesterdaySunshineDuration']),
-        TelemetryFiler('HMIP-PSM', ['on', 'currentPowerConsumption', 'energyCounter']),
-        TelemetryFiler('HMIP-FSM', ['on', 'currentPowerConsumption', 'energyCounter']),
+        TelemetryFiler('HmIP-PSM', ['on', 'currentPowerConsumption', 'energyCounter']),
+        TelemetryFiler('HmIP-FSM', ['on', 'currentPowerConsumption', 'energyCounter']),
+        TelemetryFiler('HmIP-BSM', ['on', 'currentPowerConsumption', 'energyCounter']),
         TelemetryFiler('HmIP-SWDO-I', ['windowState', 'sabotage']),
         TelemetryFiler('HmIP-SLO', ['averageIllumination', 'currentIllumination','highestIllumination','lowestIllumination']),
         TelemetryFiler('HmIP-WTH-2', ['actualTemperature', 'humidity','vaporAmount', 'setPointTemperature']),
@@ -119,7 +121,9 @@ class ThingsboardDevice:
         c = self._connection._preq(requests.get, f'api/device/{self.id.id}/credentials')
         creds = ThingsboardDeviceCredentials._fromDict(c)
         _preq(requests.post, f'{self._connection._url}/api/v1/{creds.credentialsId}/attributes', a)
-        _preq(requests.post, f'{self._connection._url}/api/v1/{creds.credentialsId}/telemetry', {'ts': int(device.lastStatusUpdate.timestamp()*1000), 'values': t})
+
+        ts = int((device.lastStatusUpdate or datetime.datetime.now()).timestamp()*1000)
+        _preq(requests.post, f'{self._connection._url}/api/v1/{creds.credentialsId}/telemetry', {'ts': ts, 'values': t})
 
 class ThingsboardConnection:
     def __init__(self, connection):
