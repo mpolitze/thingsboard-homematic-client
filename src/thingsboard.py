@@ -145,7 +145,7 @@ class ThingsboardConnection:
         x = self._preq(requests.post, 'api/auth/login', data)
         return x['token']
 
-    def getOrCreateDevice(self, device: int) -> ThingsboardDevice:
+    def getOrCreateDevice(self, group: HmIPGroup, device: HmIPDevice) -> ThingsboardDevice:
         data = {'deviceTypes': ['Sensor', device.modelType], 'parameters':{'rootType':'DEVICE', 'rootId':self._rootDeviceId, 'direction': 'FROM', 'relationTypeGroup': 'COMMON','maxLevel': 0}}        
         devices = self._preq(requests.post, 'api/devices', data)
 
@@ -156,11 +156,18 @@ class ThingsboardConnection:
                 theDevice = d
                 break
 
+        label = f'{device.label} [{group.label}]'
+
         if not theDevice:
-            data = {'label': device.id, 'name': device.label, 'type': device.modelType}
+            data = {'label': device.id, 'name': label, 'type': device.modelType}
             theDevice = self._preq(requests.post, 'api/device', data)
             
             data = {"from": {'entityType':'DEVICE', 'id':self._rootDeviceId}, 'to': {'entityType':'DEVICE', 'id': theDevice['id']['id']}, 'type':'Contains', 'typeGroup': 'COMMON'}
             self._preq(requests.post, 'api/relation', data)
+
+        if not (theDevice['name'] == label and theDevice['type'] == device.modelType):
+            theDevice['name'] = label
+            theDevice['type'] = device.modelType
+            theDevice = self._preq(requests.post, 'api/device', theDevice)
 
         return ThingsboardDevice._fromDict(theDevice, self)

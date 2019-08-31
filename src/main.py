@@ -20,7 +20,7 @@ def main():
     for g in home.groups:
         if g.groupType=="META":
             for d in g.devices:
-                x = tb.getOrCreateDevice(d)  
+                x = tb.getOrCreateDevice(g, d)  
                 x.updateTelemetryFromHmIP(g, d)
                 
 
