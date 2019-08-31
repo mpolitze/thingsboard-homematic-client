@@ -66,6 +66,8 @@ TELEMETRY_FILTERS = [
         TelemetryFiler('HMIP-FSM', ['on', 'currentPowerConsumption', 'energyCounter']),
         TelemetryFiler('HmIP-SWDO-I', ['windowState', 'sabotage']),
         TelemetryFiler('HmIP-SLO', ['averageIllumination', 'currentIllumination','highestIllumination','lowestIllumination']),
+        TelemetryFiler('HmIP-WTH-2', ['actualTemperature', 'humidity','vaporAmount', 'setPointTemperature']),
+        TelemetryFiler('HmIP-STHD', ['actualTemperature', 'humidity','vaporAmount', 'setPointTemperature']),
 ]
 
 class ThingsboardDevice:
