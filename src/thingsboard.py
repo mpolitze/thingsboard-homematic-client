@@ -70,6 +70,7 @@ TELEMETRY_FILTERS = [
         TelemetryFiler('HmIP-SLO', ['averageIllumination', 'currentIllumination','highestIllumination','lowestIllumination']),
         TelemetryFiler('HmIP-WTH-2', ['actualTemperature', 'humidity','vaporAmount', 'setPointTemperature']),
         TelemetryFiler('HmIP-STHD', ['actualTemperature', 'humidity','vaporAmount', 'setPointTemperature']),
+        TelemetryFiler('HmIP-eTRV-2', ['valveActualTemperature', 'valvePosition']),
 ]
 
 class ThingsboardDevice:
