@@ -42,7 +42,7 @@ class ThingsboardDeviceCredentials:
         c.id = ThingsboardId._fromDict(o.get('id'))     
         return c
 
-class TelemetryFiler:
+class TelemetryFilter:
     def __init__(self, r, a: list):
         self._deviceType = r
         self.r = re.compile(r, re.IGNORECASE)
@@ -60,17 +60,21 @@ class TelemetryFiler:
         return telemetry
 
 TELEMETRY_FILTERS = [
-        TelemetryFiler('.*', ['rssiDeviceValue', 'rssiPeerValue', 'lowBat']),
-        TelemetryFiler('HmIP-BROLL', ['shutterLevel']),
-        TelemetryFiler('HmIP-SWO-PR', ['actualTemperature', 'humidity', 'illumination', 'raining', 'sunshine', 'storm', 'todayRainCounter','todaySunshineDuration','totalRainCounter','totalSunshineDuration','vaporAmount','windDirection','windDirectionVariation','windSpeed','yesterdayRainCounter','yesterdaySunshineDuration']),
-        TelemetryFiler('HmIP-PSM', ['on', 'currentPowerConsumption', 'energyCounter']),
-        TelemetryFiler('HmIP-FSM', ['on', 'currentPowerConsumption', 'energyCounter']),
-        TelemetryFiler('HmIP-BSM', ['on', 'currentPowerConsumption', 'energyCounter']),
-        TelemetryFiler('HmIP-SWDO-I', ['windowState', 'sabotage']),
-        TelemetryFiler('HmIP-SLO', ['averageIllumination', 'currentIllumination','highestIllumination','lowestIllumination']),
-        TelemetryFiler('HmIP-WTH-2', ['actualTemperature', 'humidity','vaporAmount', 'setPointTemperature']),
-        TelemetryFiler('HmIP-STHD', ['actualTemperature', 'humidity','vaporAmount', 'setPointTemperature']),
-        TelemetryFiler('HmIP-eTRV-2', ['valveActualTemperature', 'valvePosition']),
+        TelemetryFilter('.*', ['rssiDeviceValue', 'rssiPeerValue', 'lowBat']),
+        TelemetryFilter('HmIP-BROLL', ['shutterLevel']),
+        TelemetryFilter('HmIP-SWO-PR', ['actualTemperature', 'humidity', 'illumination', 'raining', 'sunshine', 'storm', 'todayRainCounter','todaySunshineDuration','totalRainCounter','totalSunshineDuration','vaporAmount','windDirection','windDirectionVariation','windSpeed','yesterdayRainCounter','yesterdaySunshineDuration']),
+        TelemetryFilter('HmIP-PSM', ['on', 'currentPowerConsumption', 'energyCounter']),
+        TelemetryFilter('HmIP-FSM', ['on', 'currentPowerConsumption', 'energyCounter']),
+        TelemetryFilter('HmIP-BSM', ['on', 'currentPowerConsumption', 'energyCounter']),
+        TelemetryFilter('HmIP-SWDO-I', ['windowState', 'sabotage']),
+        TelemetryFilter('HmIP-SLO', ['averageIllumination', 'currentIllumination','highestIllumination','lowestIllumination']),
+        TelemetryFilter('HmIP-WTH-2', ['actualTemperature', 'humidity','vaporAmount', 'setPointTemperature']),
+        TelemetryFilter('HmIP-STHD', ['actualTemperature', 'humidity','vaporAmount', 'setPointTemperature']),
+        TelemetryFilter('HmIP-eTRV-2', ['valveActualTemperature', 'valvePosition']),
+        TelemetryFilter('HMIP-WRC2', []),
+        TelemetryFilter('HmIP-WRC6', []),
+        TelemetryFilter('HmIP-SMI55', ['illumination','currentIllumination', 'motionDetected']),
+        TelemetryFilter('HMIP-SWDO', ['windowsState', 'sabotage'])
 ]
 
 class ThingsboardDevice:
@@ -157,7 +161,7 @@ class ThingsboardConnection:
                 theDevice = d
                 break
 
-        label = f'{device.label} [{group.label}]'
+        label = f'{device.label} ({device.id[-4]}) [{group.label}]'
 
         if not theDevice:
             data = {'label': device.id, 'name': label, 'type': device.modelType}

@@ -20,8 +20,12 @@ def main():
     for g in home.groups:
         if g.groupType=="META":
             for d in g.devices:
-                x = tb.getOrCreateDevice(g, d)  
-                x.updateTelemetryFromHmIP(g, d)
+                try:
+                    x = tb.getOrCreateDevice(g, d)  
+                    x.updateTelemetryFromHmIP(g, d)
+                    break
+                except:
+                    print("Error updating telemetry from '%s' (%s)" % (d.label, d.id))
                 
 
 if __name__ == "__main__":
