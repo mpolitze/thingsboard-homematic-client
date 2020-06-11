@@ -74,7 +74,7 @@ TELEMETRY_FILTERS = [
         TelemetryFilter('HMIP-WRC2', []),
         TelemetryFilter('HmIP-WRC6', []),
         TelemetryFilter('HmIP-SMI55', ['illumination','currentIllumination', 'motionDetected']),
-        TelemetryFilter('HMIP-SWDO', ['windowsState', 'sabotage'])
+        TelemetryFilter('HMIP-SWDO', ['windowState', 'sabotage'])
 ]
 
 class ThingsboardDevice:
