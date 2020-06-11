@@ -161,7 +161,7 @@ class ThingsboardConnection:
                 theDevice = d
                 break
 
-        label = f'{device.label} ({device.id[-4]}) [{group.label}]'
+        label = f'{device.label} ({device.id[-4:]}) [{group.label}]'
 
         if not theDevice:
             data = {'label': device.id, 'name': label, 'type': device.modelType}
