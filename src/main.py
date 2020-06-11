@@ -23,7 +23,6 @@ def main():
                 try:
                     x = tb.getOrCreateDevice(g, d)  
                     x.updateTelemetryFromHmIP(g, d)
-                    break
                 except:
                     print("Error updating telemetry from '%s' (%s)" % (d.label, d.id))
                 
