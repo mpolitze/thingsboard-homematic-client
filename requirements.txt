@@ -1,1 +1,1 @@
-homematicip==0.10.18
+homematicip==0.13.0
