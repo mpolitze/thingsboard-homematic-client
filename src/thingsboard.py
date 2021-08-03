@@ -73,6 +73,7 @@ TELEMETRY_FILTERS = [
         TelemetryFilter('HmIP-eTRV-2', ['valveActualTemperature', 'valvePosition']),
         TelemetryFilter('HMIP-WRC2', []),
         TelemetryFilter('HmIP-WRC6', []),
+        TelemetryFilter('HmIP-SWSD', ['smokeDetectorAlarmType', 'smokeEventRepeatingActive', 'chamberDegraded']),
         TelemetryFilter('HmIP-SMI55', ['illumination','currentIllumination', 'motionDetected']),
         TelemetryFilter('HMIP-SWDO', ['windowState', 'sabotage']),
         TelemetryFilter('HmIP-FSI16', ['on'])
