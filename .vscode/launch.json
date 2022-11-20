@@ -9,7 +9,10 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/src/main.py",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "env": {
+                "HMIP_TB_DRY_RUN": "1"
+            }
         },
         {
             "name": "Python: Remote Attach",

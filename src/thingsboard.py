@@ -1,11 +1,13 @@
-import requests
+import os
 import json
 import re
 import datetime
+import requests
 from homematicip.device import Device as HmIPDevice
 from homematicip.group import Group as HmIPGroup
 
-def _preq(req, resource: str, data: dict=None, addHeaders: dict={}):
+def _preq(req, resource: str, data: dict=None, addHeaders: dict=None):
+    addHeaders = addHeaders if addHeaders is not None else {}
     headers= {'Content-Type': 'application/json', 'Accept': 'application/json', **addHeaders}
 
     res = req(resource, data = json.dumps(data), headers = headers)
@@ -14,12 +16,12 @@ def _preq(req, resource: str, data: dict=None, addHeaders: dict={}):
     return None
 
 class ThingsboardId:
-    def __init__(self, id: str = '', entityType: str = None):
-        self.id = id
+    def __init__(self, tbid: str = '', entityType: str = None):
+        self.id = tbid
         self.entityType = entityType
 
     @staticmethod
-    def _fromDict(d: dict) -> 'ThingsboardId':
+    def fromDict(d: dict) -> 'ThingsboardId':
         return ThingsboardId(d.get('id'), d.get('entityType'))
 
 class ThingsboardDeviceCredentials:
@@ -32,14 +34,14 @@ class ThingsboardDeviceCredentials:
         self.id = ThingsboardId
 
     @staticmethod
-    def _fromDict(o: dict) -> 'ThingsboardDeviceCredentials':
+    def fromDict(o: dict) -> 'ThingsboardDeviceCredentials':
         c = ThingsboardDeviceCredentials()
         c.createdTime = o.get('createdTime')
         c.credentialsId = o.get('credentialsId')
         c.credentialsType = o.get('credentialsType')
         c.credentialsValue = o.get('credentialsValue')
-        c.deviceId = ThingsboardId._fromDict(o.get('deviceId')),
-        c.id = ThingsboardId._fromDict(o.get('id'))     
+        c.deviceId = ThingsboardId.fromDict(o.get('deviceId')),
+        c.id = ThingsboardId.fromDict(o.get('id'))
         return c
 
 class TelemetryFilter:
@@ -48,18 +50,20 @@ class TelemetryFilter:
         self.r = re.compile(r, re.IGNORECASE)
         self.a = a
 
-    def isFor(self, device: HmIPDevice):
+    def isExactlyFor(self, device: HmIPDevice):
         return self._deviceType.lower() == device.modelType.lower()
 
-    def collect(self, device: HmIPDevice, telemetry: dict = {}):
-        if self.r.match(device.modelType):           
+    def collect(self, device: HmIPDevice, telemetry: dict=None):
+        telemetry = telemetry if telemetry is not None else {}
+        if self.r.match(device.modelType):
             for attr, value in device.__dict__.items():
-                if attr in self.a: 
+                if attr in self.a:
                     telemetry[attr] = value
 
         return telemetry
 
 TELEMETRY_FILTERS = [
+        # pylint: disable=line-too-long
         TelemetryFilter('.*', ['rssiDeviceValue', 'rssiPeerValue', 'lowBat']),
         TelemetryFilter('HmIP-BROLL', ['shutterLevel']),
         TelemetryFilter('HmIP-SWO-PR', ['actualTemperature', 'humidity', 'illumination', 'raining', 'sunshine', 'storm', 'todayRainCounter','todaySunshineDuration','totalRainCounter','totalSunshineDuration','vaporAmount','windDirection','windDirectionVariation','windSpeed','yesterdayRainCounter','yesterdaySunshineDuration']),
@@ -90,25 +94,26 @@ class ThingsboardDevice:
         self.name = ''
         self.tenantId = ThingsboardId()
         self.type = ''
-    
+
     @staticmethod
-    def _fromDict(o: dict, connection: 'ThingsboardConnection') -> 'ThingsboardDevice':
+    def fromDict(o: dict, connection: 'ThingsboardConnection') -> 'ThingsboardDevice':
         d = ThingsboardDevice(connection)
         d.additionalInfo = o.get('additionalInfo')
         d.createdTime = o.get('createdTime')
-        d.customerId = ThingsboardId._fromDict(o.get('customerId'))
-        d.id = ThingsboardId._fromDict(o.get('id'))
+        d.customerId = ThingsboardId.fromDict(o.get('customerId'))
+        d.id = ThingsboardId.fromDict(o.get('id'))
         d.label = o.get('label')
         d.name = o.get('name')
-        d.tenantId = ThingsboardId._fromDict(o.get('tenantId'))
-        d.type = o.get('type')        
+        d.tenantId = ThingsboardId.fromDict(o.get('tenantId'))
+        d.type = o.get('type')
         return d
 
     def updateTelemetryFromHmIP(self, group: HmIPGroup, device: HmIPDevice):
         a = {'group': group.label}
         t = {}
 
-        if True not in map(lambda f: f.isFor(device), TELEMETRY_FILTERS):
+        if True not in map(lambda f: f.isExactlyFor(device), TELEMETRY_FILTERS):
+            print(f'WARNING: Device type "{device.modelType.lower()}" unknown. Ingoring.')
             return
 
         for f in TELEMETRY_FILTERS:
@@ -116,26 +121,34 @@ class ThingsboardDevice:
 
         deviceProps = {**(device._rawJSONData), **{ k : v for c in device._rawJSONData['functionalChannels'].values() for k, v in c.items() }}
         for attr, value in deviceProps.items():
-            if attr[0] != '_' and not t.__contains__(attr) and type(value) not in [dict, list]:
+            if attr[0] != '_' and not attr in t and type(value) not in [dict, list]:
                 a[attr] = value
 
-        for k in [k for k in t if t[k] is None]: 
-            del t[k] 
+        for k in [k for k in t if t[k] is None]:
+            del t[k]
 
-        for k in [k for k in a if a[k] is None]: 
-            del a[k] 
+        for k in [k for k in a if a[k] is None]:
+            del a[k]
 
         c = self._connection._preq(requests.get, f'api/device/{self.id.id}/credentials')
-        creds = ThingsboardDeviceCredentials._fromDict(c)
-        _preq(requests.post, f'{self._connection._url}/api/v1/{creds.credentialsId}/attributes', a)
+        creds = ThingsboardDeviceCredentials.fromDict(c)
+        if not 'HMIP_TB_DRY_RUN' in os.environ:
+            _preq(requests.post, f'{self._connection.url}/api/v1/{creds.credentialsId}/attributes', a)
+        else:
+            print(f'POST {self._connection.url}/api/v1/{creds.credentialsId}/attributes')
+            print(json.dumps(a))
 
         ts = int((device.lastStatusUpdate or datetime.datetime.now()).timestamp()*1000)
-        _preq(requests.post, f'{self._connection._url}/api/v1/{creds.credentialsId}/telemetry', {'ts': ts, 'values': t})
+        if not 'HMIP_TB_DRY_RUN' in os.environ:
+            _preq(requests.post, f'{self._connection.url}/api/v1/{creds.credentialsId}/telemetry', {'ts': ts, 'values': t})
+        else:
+            print(f'POST {self._connection.url}/api/v1/{creds.credentialsId}/telemetry')
+            print(json.dumps({'ts': ts, 'values': t}))
 
 class ThingsboardConnection:
     def __init__(self, connection):
         self._rootDeviceId =  connection.rootdeviceid
-        self._url = connection.url
+        self.url = connection.url
         self._username = connection.username
         self._password = connection.password
         self._accessToken = None
@@ -145,7 +158,7 @@ class ThingsboardConnection:
         headers = {}
         if self._accessToken:
             headers = {'X-Authorization': 'Bearer ' + self._accessToken, 'Content-Type': 'application/json', 'Accept': 'application/json'}
-        return _preq(req, f'{self._url}/{resource}', data, headers)
+        return _preq(req, f'{self.url}/{resource}', data, headers)
 
     def _getAccessToken(self, user: str, password: str) -> str:
         data = {'username':user, 'password':password}
@@ -153,7 +166,7 @@ class ThingsboardConnection:
         return x['token']
 
     def getOrCreateDevice(self, group: HmIPGroup, device: HmIPDevice) -> ThingsboardDevice:
-        data = {'deviceTypes': ['Sensor', device.modelType], 'parameters':{'rootType':'DEVICE', 'rootId':self._rootDeviceId, 'direction': 'FROM', 'relationTypeGroup': 'COMMON','maxLevel': 0}}        
+        data = {'deviceTypes': ['Sensor', device.modelType], 'parameters':{'rootType':'DEVICE', 'rootId':self._rootDeviceId, 'direction': 'FROM', 'relationTypeGroup': 'COMMON','maxLevel': 0}}
         devices = self._preq(requests.post, 'api/devices', data)
 
         theDevice = None
@@ -168,7 +181,7 @@ class ThingsboardConnection:
         if not theDevice:
             data = {'label': device.id, 'name': label, 'type': device.modelType}
             theDevice = self._preq(requests.post, 'api/device', data)
-            
+
             data = {"from": {'entityType':'DEVICE', 'id':self._rootDeviceId}, 'to': {'entityType':'DEVICE', 'id': theDevice['id']['id']}, 'type':'Contains', 'typeGroup': 'COMMON'}
             self._preq(requests.post, 'api/relation', data)
 
@@ -177,4 +190,4 @@ class ThingsboardConnection:
             theDevice['type'] = device.modelType
             theDevice = self._preq(requests.post, 'api/device', theDevice)
 
-        return ThingsboardDevice._fromDict(theDevice, self)
+        return ThingsboardDevice.fromDict(theDevice, self)

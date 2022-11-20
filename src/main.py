@@ -1,8 +1,5 @@
-import requests
 import homematicip
-import json
 from homematicip.home import Home
-from homematicip.device import Device
 
 from thingsboard import ThingsboardConnection
 
@@ -21,10 +18,10 @@ def main():
         if g.groupType=="META":
             for d in g.devices:
                 try:
-                    x = tb.getOrCreateDevice(g, d)  
+                    x = tb.getOrCreateDevice(g, d)
                     x.updateTelemetryFromHmIP(g, d)
                 except:
-                    print("Error updating telemetry from '%s' (%s)" % (d.label, d.id))
+                    print(f"Error updating telemetry from '{d.label}' {d.id}")
                 
 
 if __name__ == "__main__":
