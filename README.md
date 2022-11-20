@@ -2,6 +2,10 @@
 
 Pull changes from Homematic IP Access Point / Cloud and push them into Thingsboard via REST API.
 
+The latest build is avialable as a container running a cron job to push the values every 10 minutes.
+
+If you need more freuquent updates you have to modify the crontab in the container or build your own image. Please be gentile to the Homematic IP API!
+
 ## Setup with container
 
 1. Follow steps below to create a working `config.ini`
@@ -10,6 +14,8 @@ Pull changes from Homematic IP Access Point / Cloud and push them into Thingsboa
 4. Run the container as deamon `podman run -d --name thingsboard-homematic-client -v thingsboard-homematic-client-config:/config ghcr.io/mpolitze/thingsboard-homematic-client:latest`
 
 ## Development
+
+You can run the bridge in a local virtual environment, in a standard python container or use the lates released container image from `ghcr.io/mpolitze/thingsboard-homematic-client:latest`. Setup for virtual environment is below.
 
 ### Run development container
 
