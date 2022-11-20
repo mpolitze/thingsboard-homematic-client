@@ -70,6 +70,7 @@ TELEMETRY_FILTERS = [
         TelemetryFilter('HmIP-PSM', ['on', 'currentPowerConsumption', 'energyCounter']),
         TelemetryFilter('HmIP-PSM-2', ['on', 'currentPowerConsumption', 'energyCounter']),
         TelemetryFilter('HmIP-FSM', ['on', 'currentPowerConsumption', 'energyCounter']),
+        TelemetryFilter('HmIP-FSM16', ['on', 'currentPowerConsumption', 'energyCounter']),
         TelemetryFilter('HmIP-BSM', ['on', 'currentPowerConsumption', 'energyCounter']),
         TelemetryFilter('HmIP-SWDO-I', ['windowState', 'sabotage']),
         TelemetryFilter('HmIP-SLO', ['averageIllumination', 'currentIllumination','highestIllumination','lowestIllumination']),
