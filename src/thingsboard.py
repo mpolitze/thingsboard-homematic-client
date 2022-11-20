@@ -67,6 +67,7 @@ TELEMETRY_FILTERS = [
         TelemetryFilter('.*', ['rssiDeviceValue', 'rssiPeerValue', 'lowBat']),
         TelemetryFilter('HmIP-BROLL', ['shutterLevel']),
         TelemetryFilter('HmIP-SWO-PR', ['actualTemperature', 'humidity', 'illumination', 'raining', 'sunshine', 'storm', 'todayRainCounter','todaySunshineDuration','totalRainCounter','totalSunshineDuration','vaporAmount','windDirection','windDirectionVariation','windSpeed','yesterdayRainCounter','yesterdaySunshineDuration']),
+        TelemetryFilter('HmIP-PS', ['on']),
         TelemetryFilter('HmIP-PSM', ['on', 'currentPowerConsumption', 'energyCounter']),
         TelemetryFilter('HmIP-PSM-2', ['on', 'currentPowerConsumption', 'energyCounter']),
         TelemetryFilter('HmIP-FSM', ['on', 'currentPowerConsumption', 'energyCounter']),
@@ -137,14 +138,14 @@ class ThingsboardDevice:
         creds = ThingsboardDeviceCredentials.fromDict(c)
         if not 'HMIP_TB_DRY_RUN' in os.environ:
             _preq(requests.post, f'{self._connection.url}/api/v1/{creds.credentialsId}/attributes', a)
-        else:
+        elif not 'HMIP_TB_DRY_RUN_SILENT' in os.environ:
             print(f'POST {self._connection.url}/api/v1/{creds.credentialsId}/attributes')
             print(json.dumps(a))
 
         ts = int((device.lastStatusUpdate or datetime.datetime.now()).timestamp()*1000)
         if not 'HMIP_TB_DRY_RUN' in os.environ:
             _preq(requests.post, f'{self._connection.url}/api/v1/{creds.credentialsId}/telemetry', {'ts': ts, 'values': t})
-        else:
+        elif not 'HMIP_TB_DRY_RUN_SILENT' in os.environ:
             print(f'POST {self._connection.url}/api/v1/{creds.credentialsId}/telemetry')
             print(json.dumps({'ts': ts, 'values': t}))
 

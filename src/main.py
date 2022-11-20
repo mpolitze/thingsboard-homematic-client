@@ -20,9 +20,9 @@ def main():
                 try:
                     x = tb.getOrCreateDevice(g, d)
                     x.updateTelemetryFromHmIP(g, d)
-                except:
-                    print(f"Error updating telemetry from '{d.label}' {d.id}")
-                
+                except: #pylint: disable=bare-except
+                    print(f"ERROR: updating telemetry from '{d.label}' {d.id}")
+
 
 if __name__ == "__main__":
     main()

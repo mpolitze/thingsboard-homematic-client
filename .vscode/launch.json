@@ -11,7 +11,8 @@
             "program": "${workspaceFolder}/src/main.py",
             "console": "integratedTerminal",
             "env": {
-                "HMIP_TB_DRY_RUN": "1"
+                "HMIP_TB_DRY_RUN": "1",
+                "HMIP_TB_DRY_RUN_SILENT": "1"
             }
         },
         {
